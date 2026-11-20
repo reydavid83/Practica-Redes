@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="es-mx">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<title>M&oacute;dulo de Servicios a los Alumnos</title>
+	<link rel="shortcut icon" href="../UASLIB/img/favicon.ico">
+
+	<link type="text/css" rel="stylesheet" href="../UASLIB/assets/bootstrap/4.5.3/bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="../UASLIB/assets/bootstrap-vue/2.21.2/bootstrap-vue.min.css" />
+	<link type="text/css" rel="stylesheet" href="../UASLIB/assets/font-awesome/5.13.0/css/all.min.css">
+	<link type="text/css" rel="stylesheet" href="../UASLIB/assets/aos/css/aos.css">
+	<link type="text/css" rel="stylesheet" href="../UASLIB/assets/vue-componentes-cdn/Component.css">
+	<link type="text/css" rel="stylesheet" href="./css/main.css">
+	<link type="text/css" rel="stylesheet" href="./css/head.css">
+	<link type="text/css" rel="stylesheet" href="./css/foot.css">
+	<link type="text/css" rel="stylesheet" href="./css/mdb.css">
+
+	<script type="text/javascript" src="../UASLIB/assets/popper/1.14.3/popper.min.js"></script>
+	<script type="text/javascript" src="../UASLIB/assets/aos/js/aos.js"></script>
+	<script type="text/javascript" src="../UASLIB/js/axios.min.js"></script>
+	<script type="text/javascript" src="../UASLIB/js/vue.min.js"></script>
+	<script type="text/javascript" src="../UASLIB/assets/bootstrap-vue/2.21.2/bootstrap-vue.min.js"></script>
+	<script type="text/javascript" src="../UASLIB/assets/bootstrap-vue/2.21.2/bootstrap-vue-icons.min.js"></script>
+	<script type="text/javascript" src="../UASLIB/js/polyfill.min.js"></script>
+	<script type="text/javascript" src="../UASLIB/js/babel.min.js"></script>
+	<script type="text/babel"      src="../UASLIB/assets/vue-componentes-cdn/Component.js"></script>
+</head>
+<body>
+	<template id="vuelogin">
+		<div id="wrapper">
+			<b-container fluid class="p-0">
+				<b-row class="m-0">
+					<b-col cols="12" class="p-0">
+						<div class="d-none d-lg-block">
+							<div class="container-fluid header-superior">
+								<img src="./img/logo_web_uas.png" class="float-left header-logo-uas">
+								<img src="./img/logo_web_administracion.png" class="float-right header-logo-consolidacion">
+								<div class="col-12 text-left">
+									<h5 class="header-titulo-superior">Direcci&oacute;n General de Servicios Escolares<br><small>M&oacute;dulo de Servicios a los Alumnos</small></h5>
+								</div>
+							</div>
+							<div class="container-fluid header-inferior">
+								<h1 class="header-titulo-inferior text-center">Universidad Aut&oacute;noma de Sinaloa</h1>
+							</div>
+						</div>
+						<div class="d-block d-lg-none">
+							<div class="container-fluid header-superior text-center">
+								<img src="./img/logo_web_uas.png" class="header-logo-uas">
+								<img src="./img/logo_web_administracion.png" class="header-logo-consolidacion">
+							</div>
+							<div class="container-fluid header-inferior">
+								<div class="container px-0 px-sm-3">
+									<h5 class="header-titulo-superior text-center">Direcci&oacute;n General de Servicios Escolares<br><small>M&oacute;dulo de Servicios a los Alumnos</small></h5>
+									<span class="btn btn-sm text-white header-btn-login d-block d-lg-none" v-on:click="abrirLogin">
+										<i class="fas fa-sign-in-alt"></i>
+									</span>
+								</div>
+							</div>
+						</div>
+						<b-container fluid class="header-fondo-menu">
+							&nbsp;
+						</b-container>
+					</b-col>
+				</b-row>
+			</b-container>
+
+			<b-container fluid class="p-0">
+				<b-row class="m-0">
+					<b-container>
+						<b-row class="py-4">
+							<b-col cols="12" lg="9">
+								<b-img src="./img/banner03.jpeg" rounded fluid class="w-100 banner"></b-img>
+							</b-col>
+							<b-col cols="12" lg="3" class="d-none d-lg-block">
+								<login-alumnos :color-header="'linear-gradient(white, #eee 50%, #e4e4e4)'" :color-button="'#FDC800'">
+									<template v-slot:header>
+									</template>
+									<template v-slot:msg>
+									</template>
+								</login-alumnos>
+							</b-col>
+						</b-row>
+					</b-container>
+				</b-row>
+			</b-container>
+
+			<b-container fluid class="p-0">
+				<b-row class="m-0" style="background-color: #f4faff">
+					<b-container>
+						<b-row class="py-4">
+
+							<b-col cols="12" lg="4" class="mb-4 mb-lg-1">
+								<b-link>
+									<div class="div-avisos rounded shadow card sombra p-3">
+										<div class="h-100">
+											<p class="div-avisos-texto">
+											Estimado Alumno, no te dejes engañar por falsos gestores, ninguna persona de la Universidad te llama para ofrecer cambios de calificaciones, esto es ilegal y es un delito, puedes ser expulsado de la Universidad por incurrir en dichas acciones, dado que incurres en los Artículos 18, 54 y 55 del Reglamento Escolar.</p>
+										</div>
+									</div>
+								</b-link>
+							</b-col>
+
+							<b-col cols="12" lg="4" class="mb-4 mb-lg-1">
+								<b-link href="#" @click="$bvModal.show('bv-modal-cartel-seguridad')">
+									<div class="div-avisos rounded shadow card sombra p-3">
+										<div class="text-center h-25">
+											<p class="div-avisos-texto">
+											Recomendaciones para mejorar la seguridad de sus contraseñas.
+											</p>
+										</div>
+										<div class="text-center h-75">
+											<b-img src="./img/ContraseñasRecomendaciones.jpg" fluid data-aos="fade-left" class="h-100"></b-img>
+										</div>
+									</div>
+								</b-link>
+							</b-col>
+
+							<b-col cols="12" lg="4" class="mb-4 mb-lg-1">
+								<b-link href="#" @click="$bvModal.show('bv-modal-aviso-privacidad')">
+									<div class="div-avisos rounded shadow card sombra p-3">
+										<div class="text-center h-100">
+											<b-img src="./img/avisoprivacidad02.jpg" fluid data-aos="fade-right" class="h-100"></b-img>
+										</div>
+									</div>
+								</b-link>
+							</b-col>
+
+						</b-row>
+					</b-container>
+				</b-row>
+			</b-container>
+
+			<b-container fluid class="p-0">
+				<b-row class="m-0">
+					<b-container>
+						<b-row class="py-4" style="overflow-x: hidden">
+							<b-col cols="12" md="9">
+								<b-row>
+									<b-col cols="12">
+										<h4 class="my-0 font-weight-normal text-center">Misi&oacute;n</h4>
+									</b-col>
+									<b-col cols="12">
+										<p class="mainMisionVision" data-aos="zoom-in-up">La Direcci&oacute;n General de Servicios Escolares es la dependencia de la
+											Universidad Aut&oacute;noma de Sinaloa, responsable de la administraci&oacute;n y gesti&oacute;n
+											escolar, que con la participaci&oacute;n de su personal competente y comprometido, haciendo uso de
+											sistemas automatizados y procesos certificados, brinda a la comunidad universitaria y usuarios
+											externos, un servicio eficaz y expedito.</p>
+									</b-col>
+									<b-col cols="12">
+										<h4 class="my-0 font-weight-normal text-center">Visi&oacute;n</h4>
+									</b-col>
+									<b-col cols="12">
+										<p class="mainMisionVision" data-aos="zoom-in-up">La Direcci&oacute;n General de Servicios Escolares es una dependencia que
+											satisface la demanda de sus usuarios con procesos certificados en est&aacute;ndares internacionales
+											apeg&aacute;ndose a la normatividad y brinda servicios de administraci&oacute;n y gesti&oacute;n
+											escolar, a trav&eacute;s de la innovaci&oacute;n, orientada a la apropiaci&oacute;n de una cultura
+											emergente apoyada en el uso adecuado de las tecnologías de la informaci&oacute;n y la
+											comunicaci&oacute;n que permiten lograr productos con eficiencia y calidad.</p>
+									</b-col>
+								</b-row>
+							</b-col>
+							<b-col cols="3" class="text-center d-none d-md-block">
+								<b-img src="./img/alumnos01.png" fluid data-aos="fade-left"></b-img>
+							</b-col>
+						</b-row>
+					</b-container>
+				</b-row>
+			</b-container>
+
+			<b-row class="m-0 footer-bottom1 text-white p-3">
+				<b-container>
+					<b-row class="row footer-links">
+
+						<b-col cols="12" md="4">
+							<img class="footer-logo" src="../UASLIB/img/brand.png" alt="Site Logo">
+							<div>
+								<ul>
+									<li>
+										<a href="http://dgse.uas.edu.mx/" target="_blank">http://dgse.uas.edu.mx/</a>
+									</li>
+								</ul>
+							</div>
+						</b-col>
+
+						<b-col cols="12" md="8" class="pt-2 pt-md-0">
+							<h5 class="m-0">Soporte</h5>
+							<div>
+								<ul>
+									<li>
+										<a href="https://www.uas.edu.mx/pdf/marco_juridico/2023/Codigo_de_Etica_Codigo_de_Conducta_UAS_2022.pdf" target="_blank"><i class="fa fa-angle-double-right"></i> C&oacute;digo de &Eacute;tica y C&oacute;digo de Conducta</a>
+									</li>
+									<li>
+										<a href="descargas/Reglamento-Escolar.pdf" target="_blank"><i class="fa fa-angle-double-right"></i> Reglamento escolar</a>
+									</li>
+									<li>
+										<a href="https://www.gob.mx/curp/" target="_blank"><i class="fa fa-angle-double-right"></i> Consulta de CURP</a>
+									</li>
+									<li>
+										<a href="https://serviciosdigitales.imss.gob.mx" target="_blank"><i class="fa fa-angle-double-right"></i> Consulta de n&uacute;mero seguridad social</a>
+									</li>
+									<li>
+										<a href="https://www.correosdemexico.gob.mx/SSLServicios/ConsultaCP/Descarga.aspx" target="_blank"><i class="fa fa-angle-double-right"></i> Consulta de codigo postal</a>
+									</li>
+								</ul>
+							</div>
+						</b-col>
+
+					</b-row>
+				</b-container>
+			</b-row>
+
+			<div class="overlay" v-if="loginVisible">
+				<a href="javascript:void(0)" class="closebtn" v-on:click="cerrarLogin">&times;</a>
+				<div class="overlay-content">
+					<b-row>
+						<b-col cols="10" sm="6" offset="1" offset-sm="3">
+							<login-alumnos :color-header="'linear-gradient(white, #eee 50%, #e4e4e4)'" :color-button="'#FDC800'">
+								<template v-slot:header>
+								</template>
+								<template v-slot:msg>
+								</template>
+							</login-alumnos>
+						</b-col>
+					</b-row>
+				</div>
+			</div>
+
+			<b-modal id="bv-modal-cartel-seguridad" size="xl" hide-footer>
+				<iframe src="./incluye/cartel-de-seguridad.pdf" frameborder="0" style="width: 100%; height: 75vh;"></iframe>
+			</b-modal>
+
+			<b-modal id="bv-modal-aviso-privacidad" size="xl" hide-footer>
+				<iframe src="Aviso_privacidad.pdf" frameborder="0" style="width: 100%; height: 75vh;"></iframe>
+			</b-modal>
+
+			<!--
+				onload="this.height=$(window).height()-200;"
+			-->
+		</div>
+	</template>
+
+	<script>
+		AOS.init();
+	</script>
+	<script type="text/babel">
+		var vue = new Vue({
+			el: '#vuelogin',
+			data: {
+				loginVisible: false,
+			},
+			mounted() {
+			},
+			methods: {
+				abrirLogin() {
+					this.loginVisible = true;
+				},
+				cerrarLogin() {
+					this.loginVisible = false;
+				},
+			}
+		});
+	</script>
+</body>
+</html>

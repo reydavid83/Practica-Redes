@@ -1,0 +1,194 @@
+:root {
+  --main-bg-color: brown;
+}
+
+html,
+body {
+	height: 100%;
+	font-family: -apple-system, BlinkMacSystemFont, Roboto, Arial, 'Segoe UI', 'Open Sans', 'Helvetica Neue', sans-serif;
+	line-height: 1.1;
+}
+
+#wrapper {
+	min-height: 100%;
+	width: 100%;
+	height: auto;
+}
+
+.comilla {
+	font-family: 'Source Sans Pro', sans-serif;
+	font-size: 3.2rem;
+	line-height: 0;
+	position: relative;
+	top: 20px;
+}
+
+.mainMisionVision {
+   font-style: normal;
+   font-size: 0.9rem;
+}
+
+.footer-bottom1 {
+   background: #002147;
+}
+
+.footer-bottom2 {
+   background: #002147;
+   font-size: 0.7rem;
+}
+
+.footer-bottom1 .footer-links ul {
+   list-style: none;
+   padding: 0;
+   margin: 0;
+}
+
+.footer-bottom1 .footer-links ul i {
+   padding-right: 2px;
+   color: white;
+   font-size: 0.7rem;
+   line-height: 1;
+}
+
+.footer-bottom1 .footer-links ul a {
+   color: white;
+   display: inline-block;
+   font-size: 0.7rem;
+   line-height: 1;
+}
+
+.footer-bottom1 .footer-links ul a:hover {
+   color: white;
+   text-decoration: underline;
+}
+
+.footer-logo {
+   width: 65px;
+   height: 80px;
+}
+
+a {
+	text-decoration: none !important;
+}
+
+.div-avisos {
+   height: 200px !important;
+}
+
+.div-avisos-texto {
+   color: #000;
+   line-height: 1.4;
+   font-size: 0.9rem;
+
+}
+
+.banner {
+   height: 300px;
+}
+
+.sombra:hover {
+	box-shadow: 1px 1px 13px 4px rgba(0,136,204,1) !important;
+	-webkit-box-shadow: 1px 1px 13px 4px rgba(0,136,204,1) !important;
+	-moz-box-shadow: 1px 1px 13px 4px rgba(0,136,204,1) !important;
+}
+
+.links ul {
+	list-style: none;
+}
+
+.overlay {
+	position: fixed;
+   top: 0;
+   left: 0;
+   height: 100vh;
+   width: 100%;
+   z-index: 10000;
+   background-color: rgb(0, 0, 0);
+   background-color: rgba(0, 0, 0, 0.8);
+   overflow-x: hidden;
+   transition: 0.5s;
+   display: flex;
+}
+
+.overlay-content {
+   position: relative;
+   margin: auto;
+   width: 100%;
+}
+
+.overlay a {
+   text-decoration: none;
+   color: #818181;
+   display: block;
+   transition: 0.3s;
+}
+
+.overlay a:hover,
+.overlay a:focus {
+   color: #f1f1f1;
+}
+
+.overlay .closebtn {
+   position: absolute;
+   top: 0px;
+   right: 15px;
+   font-size: 60px;
+   z-index: 10010;
+}
+
+#menulateral {
+  height: calc(100vh - 150px);
+  overflow-y: scroll;
+}
+
+#menulateral li:hover{
+   background-color: #f1ebd5;
+}
+
+@media (max-width: 400px) {
+   .banner {
+      height: 160px;
+   }
+   .div-avisos-texto {
+      font-size: 0.7rem;
+   }
+}
+
+@media (min-width: 401px) {
+   .banner {
+      height: 200px;
+   }
+}
+
+@media (min-width: 576px) {
+   .banner {
+      height: 200px;
+   }
+}
+
+@media (min-width: 768px) {
+   .banner {
+      height: 220px;
+   }
+   #menulateral {
+      font-size: 0.7rem;
+   }
+}
+
+@media (min-width: 992px) {
+   .banner {
+      height: 280px;
+   }
+   #menulateral {
+      font-size: 0.8rem;
+   }
+   .div-avisos {
+      height: 220px !important;
+   }
+}
+
+@media (min-width: 1200px) {
+   #menulateral {
+      font-size: 0.9rem;
+   }
+}
