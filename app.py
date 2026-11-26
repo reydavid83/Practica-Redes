@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import time
 import logging
@@ -85,6 +86,33 @@ def _podar_sesiones():
         del _sesiones[sid]
     while len(_sesiones) > MAX_SESIONES:
         del _sesiones[min(_sesiones, key=lambda k: _sesiones[k][1])]
+
+
+_CHARSET_META = re.compile(rb'charset\s*=\s*["\']?\s*([a-zA-Z0-9_\-]+)', re.I)
+
+
+def _charset_declarado(datos, tipo):
+    """Charset que anuncia la cabecera o el meta del HTML, si hay alguno."""
+    m = re.search(r"charset=([a-zA-Z0-9_\-]+)", tipo, re.I)
+    if m:
+        return m.group(1)
+    m = _CHARSET_META.search(datos[:2048])
+    if m:
+        return m.group(1).decode("ascii", "ignore")
+    return None
+
+
+def _a_texto(datos, tipo):
+    """Decodifica sin adivinar: UTF-8 estricto y, si falla, el charset declarado."""
+    try:
+        return datos.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    charset = _charset_declarado(datos, tipo) or "windows-1252"
+    try:
+        return datos.decode(charset, errors="replace")
+    except LookupError:
+        return datos.decode("windows-1252", errors="replace")
 
 
 # --- Login falso -------------------------------------------------------------
@@ -204,12 +232,20 @@ def proxy(ruta):
     tipo = r.headers.get("Content-Type", "text/html")
     datos = r.content
 
-    if "text/html" in tipo:
-        # El portal es windows-1252 y usa URLs absolutas: reescribimos ambas.
-        texto = datos.decode("windows-1252", errors="replace")
+    if "text/html" in tipo or tipo.startswith("text/") or "javascript" in tipo:
+        texto = _a_texto(datos, tipo)
+
+        # El portal usa URLs absolutas: las pasamos a rutas locales.
         texto = texto.replace(BASE + "/", "/").replace(BASE, "/")
+
+        # El charset declarado en el HTML ya no aplica: servimos UTF-8.
+        cabecera, resto = texto[:2048], texto[2048:]
+        cabecera = re.sub(r'(?i)(charset\s*=\s*["\']?)\s*[a-zA-Z0-9_\-]+',
+                          r"\1utf-8", cabecera)
+        texto = cabecera + resto
+
         datos = texto.encode("utf-8")
-        tipo = tipo.replace("windows-1252", "utf-8").replace("iso-8859-1", "utf-8")
+        tipo = tipo.split(";")[0].strip() + "; charset=utf-8"
 
     resp = Response(datos, status=r.status_code, content_type=tipo)
     if "Location" in r.headers:
